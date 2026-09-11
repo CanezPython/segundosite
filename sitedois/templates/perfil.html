@@ -1,0 +1,236 @@
+{% extends "homepage.html" %}
+
+{% block titulo %}
+Perfil - {{ usuario.username }}
+{% endblock %}
+
+{% block body %}
+<body>
+{% include "navbar.html" %}
+
+<div class="container">   
+
+        <!-- RC -->
+       
+            <!-- Fundo -->
+            <circle cx="40" cy="40" r="38" fill="#e60023"> </circle>
+            <!-- Letra R -->
+            <!-- R -->
+            <path
+                d="M18 58 V22 H30
+                    C38 22 42 26 42 34
+                    C42 42 38 46 30 46
+                    H18
+                    M30 46 L43 58"
+                fill="none"
+                stroke="white"
+                stroke-width="6"
+                stroke-linecap="round"
+                stroke-linejoin="round">
+            </path>
+
+            <!-- C -->
+            <path
+                d="M65 29
+                    C62 24 57 22 52 22
+                    C43 22 39 29 39 40
+                    C39 51 43 58 52 58
+                    C57 58 62 56 65 51"
+                fill="none"
+                stroke="white"
+                stroke-width="6"
+                stroke-linecap="round"
+                stroke-linejoin="round">
+            </path>
+    </svg>
+
+    
+
+{% if form %}
+
+      
+        <form class="bloco-add-img" method="POST" enctype="multipart/form-data">
+         {{ form.csrf_token }}
+          <h2>{{ usuario.username }} - Enviar foto</h2>
+
+          <div class="bloco-arquivo">
+            <label for="foto" class="botao-arquivo">
+              Escolher arquivo
+               {{ form.foto(class="input-arquivo", id="foto") }}              
+            </label>
+            <span id="imagem-arquivo" class=""></span>
+          </div>
+
+         {{ form.botao_confirmacao(class="botao-login") }}
+         </form>
+         </div>
+{% else %}
+<div class="bloco-add-img">
+   <h2>{{ usuario.username }} - Ver Perfil</h2>
+
+</div>
+{% endif %}
+
+</div>
+
+<div class="conteudo">
+{% for foto in usuario.fotos %}
+
+        <div class="foto-miniatura"
+         onclick="abrirFoto({{ loop.index0 }})">
+         <div class="bloco-imagem">
+          <img src="{{ url_for('static', filename='fotos_posts/{}'.format(foto.imagem)) }}" />
+        </div>
+         </div>  
+
+{% endfor %}
+
+
+<div id="janela-foto" class="janela-foto">
+
+   
+    <span class="fechar-foto" onclick="fecharFoto()">&times;</span>
+
+
+    
+    <button id="seta-anterior"
+            class="seta seta-anterior"
+            onclick="fotoAnterior(event)">
+        &#10094;
+    </button>
+
+
+   
+    <img id="foto-grande" class="foto-grande">
+
+
+    
+    <button id="seta-proxima"
+            class="seta seta-proxima"
+            onclick="proximaFoto(event)">
+        &#10095;
+    </button>
+
+</div>
+
+
+<script>
+
+    // Lista de todas as fotos do usuário
+    const fotos = [
+        {% for foto in usuario.fotos %}
+            "{{ url_for('static', filename='fotos_posts/' ~ foto.imagem) }}"
+            {% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+
+    // Foto que está sendo exibida
+    let fotoAtual = 0;
+
+
+    // Abrir foto
+    function abrirFoto(indice) {
+
+        fotoAtual = indice;
+
+        document.getElementById("janela-foto").style.display = "flex";
+
+        mostrarFoto();
+
+    }
+
+
+    // Mostrar foto atual
+    function mostrarFoto() {
+
+        document.getElementById("foto-grande").src = fotos[fotoAtual];
+
+        // Esconde a seta esquerda na primeira foto
+        if (fotoAtual === 0) {
+            document.getElementById("seta-anterior").style.display = "none";
+        } else {
+            document.getElementById("seta-anterior").style.display = "block";
+        }
+
+
+        // Esconde a seta direita na última foto
+        if (fotoAtual === fotos.length - 1) {
+            document.getElementById("seta-proxima").style.display = "none";
+        } else {
+            document.getElementById("seta-proxima").style.display = "block";
+        }
+
+    }
+
+
+    // Foto anterior
+    function fotoAnterior(event) {
+
+        event.stopPropagation();
+
+        if (fotoAtual > 0) {
+
+            fotoAtual--;
+
+            mostrarFoto();
+
+        }
+
+    }
+
+
+    // Próxima foto
+    function proximaFoto(event) {
+
+        event.stopPropagation();
+
+        if (fotoAtual < fotos.length - 1) {
+
+            fotoAtual++;
+
+            mostrarFoto();
+
+        }
+
+    }
+
+
+    // Fechar janela
+    function fecharFoto() {
+
+        document.getElementById("janela-foto").style.display = "none";
+
+    }
+
+
+    // Teclado
+    document.addEventListener("keydown", function(event) {
+
+        // Se a janela estiver fechada, não faz nada
+        if (document.getElementById("janela-foto").style.display !== "flex") {
+            return;
+        }
+
+
+        // Seta esquerda
+        if (event.key === "ArrowLeft") {
+            fotoAnterior(event);
+        }
+
+
+        // Seta direita
+        if (event.key === "ArrowRight") {
+            proximaFoto(event);
+        }
+
+
+        // ESC fecha
+        if (event.key === "Escape") {
+            fecharFoto();
+        }
+
+    });
+
+</script>
+{% endblock %}
